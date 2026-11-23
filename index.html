@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Open Home turnover checklist</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#eef3f3; --surface:#ffffff; --ink:#12232a; --muted:#5b6f76; --line:#d3dedf;
+  --accent:#1f7a6d; --accent-ink:#ffffff; --warn:#b53a22; --track:#cfdcdc;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1b20; --surface:#17272d; --ink:#e6f0f0; --muted:#93a8ae; --line:#27393f;
+    --accent:#3fb6a5; --accent-ink:#06201c; --warn:#ff8a70; --track:#2a3e44; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1b20; --surface:#17272d; --ink:#e6f0f0; --muted:#93a8ae; --line:#27393f;
+  --accent:#3fb6a5; --accent-ink:#06201c; --warn:#ff8a70; --track:#2a3e44; color-scheme:dark;
+}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 110px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 "Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--surface);z-index:10}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--surface);border-bottom:1px solid var(--line);padding:12px 16px 10px}
+.wrap{max-width:640px;margin:0 auto}
+h1{font-size:1.15rem;margin:0 0 8px;font-weight:700}
+.pick{display:flex;gap:8px;flex-wrap:wrap}
+select,input[type=text],input[type=date],textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 10px;min-width:0}
+select{flex:1 1 180px}
+.tabs{display:flex;gap:6px;margin-top:10px}
+.tab{flex:1;font:inherit;font-size:.95rem;font-weight:500;padding:9px 4px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.tab[hidden]{display:none}
+.tab[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.prog{margin-top:10px;display:flex;align-items:center;gap:10px;font-size:.9rem;color:var(--muted)}
+.bar{flex:1;height:8px;border-radius:4px;background:var(--track);overflow:hidden}
+.bar>i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+main{padding:14px 16px 40px}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.meta select,.meta input{width:100%}
+.meta label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:3px}
+section{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-bottom:14px;overflow:hidden}
+section h2{font-size:1rem;margin:0;padding:12px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:8px}
+section h2 span{font-weight:400;color:var(--muted);font-size:.9rem}
+.row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line);cursor:pointer}
+.row input{width:24px;height:24px;flex:none;accent-color:var(--accent)}
+#lists.need .row:has(input:checked) span{text-decoration:none;color:var(--ink);font-weight:700}
+.row:has(input:checked) span{color:var(--muted);text-decoration:line-through}
+textarea{width:100%;border:0;border-radius:0;resize:vertical;min-height:52px;background:transparent}
+.send{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}
+.send p{margin:0 0 10px;color:var(--muted);font-size:.92rem}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:inherit;font-weight:700;text-decoration:none;text-align:center;padding:12px 16px;border-radius:10px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);cursor:pointer;flex:1 1 150px}
+.btn.alt{background:transparent;color:var(--accent)}
+.btn.clear{border-color:var(--line);color:var(--muted)}
+.btn.clear.arm{border-color:var(--warn);color:var(--warn)}
+.status{margin-top:8px;min-height:1.2em;font-size:.9rem;color:var(--accent)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <h1>Open Home turnover checklist</h1>
+  <div class="pick"><select id="prop" aria-label="Property"></select></div>
+  <div class="tabs">
+    <button class="tab" data-list="cleaning">Cleaning</button>
+    <button class="tab" data-list="inspection">Inspection</button>
+    <button class="tab" data-list="stock">Stock</button>
+  </div>
+  <div class="prog"><div class="bar"><i id="fill"></i></div><span id="count">0 of 0</span></div>
+</div></header>
+<main><div class="wrap">
+  <div class="meta">
+    <div><label for="cleaner">Your name</label><select id="cleaner"><option value="">Choose your name</option></select></div>
+    <div><label for="date">Date</label><input type="date" id="date"></div>
+  </div>
+  <div id="lists"></div>
+  <div class="send">
+    <p id="sendp">When you are done, send the report on WhatsApp, then attach your photos in the same chat.</p>
+    <div class="btns">
+      <a class="btn" id="wa" href="#" target="_blank" rel="noopener">Send on WhatsApp</a>
+      <button class="btn alt" id="copy" type="button">Copy report</button>
+      <button class="btn clear" id="clear" type="button">Clear list</button>
+    </div>
+    <div class="status" id="status" role="status"></div>
+  </div>
+</div></main>
+<script>
+const PROPERTIES = ["The Beach House", "Modern Beach Apt", "Malloom", "Millwood", "Ley Pool", "Ley Garden", "Bali House", "Capri House", "Antigua", "Waves 412", "Waves 214", "Lake House"];
+const STAFF = ["Nobu", "Letwin", "Stella", "Odette (inspector)"];
+const WHATSAPP_NUMBER = ""; // optional: digits only with country code, e.g. 27821234567. Leave empty to pick the chat in WhatsApp.
+const LISTS = {
+  cleaning: { title: "Cleaning", numbered: true, sections: [
+    { name: "Kitchen", items: ["Kitchen bin, wipe inside bin and lid", "Wash all dishes and pack away", "Dishwasher: clean and empty, clean filter", "Oven: clean inside and clean oven trays", "Stove top: clean and wipe", "Fridge: wipe inside and out", "Microwave: wipe and clean", "Kettle: wipe and refill with water", "Toaster: shake out and clean", "Clean taps and sinks", "Ice trays filled", "Dish soap refill, sponge by sink, hang out dish cloths", "Drawers: wipe and repack neatly", "Check walls and plugs: wipe and clean", "Clean on top of cupboards", "Kitchen cupboards: clean, wipe and repack", "Wipe countertops and outside of cupboards", "Clean under all cupboards and appliances", "Door handles and doors: wipe and clean", "Final scan of the room"] },
+    { name: "Lounge", items: ["Vacuum couches, cushions and under couches", "Wipe all tables", "Repack books and toys neatly", "Shake out carpets", "Clean fireplace, check fireplace glass", "Wipe window sills and windows", "Final scan of the room"] },
+    { name: "Bathrooms", items: ["Toilet, sink, shower and bath: wipe and clean", "Towels: change and replace", "Shower drain: check for hair or clogs", "Hand soap refill", "Remove trash from bins", "Shower curtain or glass: clean and wipe", "Clean bath mat by shower and sink", "Toilet paper restock", "Cupboards and shelves: clean and wipe", "Clean floors", "Walls: wipe and clean, clean mould", "Mirror: clean and polish", "Final scan of the room"] },
+    { name: "Laundry room and extra rooms", items: ["Cupboards and drawers: wipe inside and clean", "Washing machine and dryer: wipe and clean", "Dryer: clean filter and lint trap", { t: "Empty dryer water", only: ["The Beach House", "Modern Beach Apt", "Waves 214"] }, "Wipe all windows and window sills", "Vacuum and mop floors, shake out carpets", "Inventory cupboard: clean, organise and pack neatly", "Final scan of the room"] },
+    { name: "Bedrooms (all bedrooms)", items: ["Change and make bed with fresh linen", "Check that mattress protector is clean", "Wash pillow cases, duvets and fitted sheets", "Dust all furniture including side tables, lamps and headboards", "Cupboards and drawers: wipe inside", "Vacuum under beds and carpets, shake out carpets", "Throw blankets: check and clean if dirty", "Wipe curtain rails or blinds", "Door handles and doors: wipe and clean", "Windows: wipe and clean, window sills", "Final scan of room"] },
+    { name: "Outside and other areas", items: ["Sweep walkway and steps, pull out weeds", "Clean BBQ grill and tongs", "Welcome door mats: shake out", "Outside furniture: wipe and clean", "Garage floor: sweep", "Pick up cigarette butts and plastic", "Front door and door handle: wipe and clean"] },
+    { name: "Important", items: ["Door handles and doors: clean and wipe", "Clean plugs and light switches", "Wipe blinds in all rooms", "Personal items left by guests: report", "Spiderwebs on ceilings: clean and wipe", "Carpets: pick up and shake out, clean under all carpets"] }
+  ]},
+  inspection: {
+   "title": "Inspection",
+   "sections": [
+    {
+     "name": "Exterior / Entrance",
+     "items": [
+      "Key box working",
+      "Front door locks correctly",
+      "Walkway swept",
+      "Keys working plus remote working",
+      "Exterior lights on",
+      "Outdoor cushions and furniture & arranged",
+      "Braai clean",
+      "Check alarm is working",
+      "No cobwebs"
+     ]
+    },
+    {
+     "name": "Living Room/ Lounge",
+     "items": [
+      "TV and Remotes working / check batteries",
+      "Wifi working - speed test",
+      "Curtains & blinds working"
+     ]
+    },
+    {
+     "name": "Kitchen",
+     "items": [
+      "Kettle working",
+      "Fridge working + ice trays filled",
+      "Microwave working",
+      "Toaster working",
+      "Stove & oven working",
+      "Bread knife",
+      "Scissors",
+      "Bottle opener",
+      "Check cutlery",
+      "Coffee plunger working and clean",
+      "Pots and pans clean + stacked neatly",
+      "Dishwasher + filter cleaned",
+      "Salt and pepper grinders full (Matching?)",
+      "Fill coffee tea & sugar",
+      "Dish soap + Sponges",
+      "Bin clean with extra bags under sink",
+      "2 clean tea towels"
+     ]
+    },
+    {
+     "name": "Under Sink - Guest",
+     "items": [
+      "Black bags",
+      "Sponges",
+      "Sunlight liquid",
+      "Cleaning cloth x1",
+      "Dishwasher tablets x3",
+      "Multipurpose cleaner",
+      "Kitchen towels x2"
+     ]
+    },
+    {
+     "name": "Bathrooms (each room)",
+     "items": [
+      "Toilet spotless + Flushing",
+      "Toilet seat working",
+      "Toilet spray / air freshener",
+      "Toilet brush",
+      "Toilet paper - 2 rolls",
+      "Hand soap full",
+      "Drains flowing - NO HAIR",
+      "Body wash full",
+      "Mirror clean + streak free"
+     ]
+    },
+    {
+     "name": "Bedrooms (each room)",
+     "items": [
+      "Linen Check - No stains or spots",
+      "No hairs",
+      "Hair dryer working",
+      "Side tables straight + lamps working",
+      "Towels folded neatly on bed",
+      "Extra blankets available"
+     ]
+    },
+    {
+     "name": "General / Other areas",
+     "items": [
+      "Geyser turned on - check HOT WATER?",
+      "Iron and iron board working",
+      "Drying rack for laundry - open it - working?",
+      "Inspect washer and dryer",
+      "Empty dryers water compartment",
+      "Check gas bottles (1x in use + 1x full spare)",
+      "Prepaid electricity meter - over 150 units",
+      "Dehumidifier",
+      "Lights & lamps working",
+      "All windows clean",
+      "Dead bugs & dust on window sills",
+      "Paintings & mirrors straight",
+      "Diffusers half way full"
+     ]
+    },
+    {
+     "name": "Property Specifics",
+     "items": [
+      "Netflix & or DStv",
+      "Pool clean",
+      "Welcome items stocked - if applicable",
+      "Garage opening and closing (Test remote)",
+      "Garage clean - NO COBWEBS",
+      "Fire places",
+      "Prepaid electricity meter - over 150 units",
+      "Outdoor cushions and furniture & arranged",
+      "Braai clean",
+      "Check alarm is working",
+      "Heaters working / oil heater"
+     ]
+    }
+   ]
+  },
+  stock: { title: "Stock", mode: "need", sections: [
+    { name: "Stock items", items: ["Dish soap", "Dishwasher tablets", "Sponges", "Kitchen paper towel", "Black bags", "Coffee", "Tea bags", "Sugar", "Salt refills", "Pepper refills", "Toilet paper", "Hand soap refill", "Shampoo", "Body wash", "Toilet spray or freshener", "All-purpose cleaner", "Bathroom cleaner", "Window cleaner", "Bleach", "Washing powder"] },
+    { name: "Other items needed", items: [] }
+  ]}
+};
+// Per-property inspection lists, keyed by property name.
+const NO_INSPECTION = ["Lake House"]; // no inspection list yet: the Inspection tab is hidden for these properties
+const INSPECTION = {"The Beach House": {"title": "Inspection", "sections": [{"name": "Exterior / Entrance", "items": ["Key box working", "Front door locks correctly", "Walkway swept", "Keys working", "Exterior lights on", "No cobwebs"]}, {"name": "Living Room/ Lounge", "items": ["TV and Remotes working / check batteries", "Wifi working - speed test", "Heaters working / oil heater", "Curtains & blinds working"]}, {"name": "Kitchen", "items": ["Kettle working", "Fridge working + ice trays filled", "Microwave working", "Toaster working", "Stove & oven working", "Bread knife", "Scissors", "Bottle opener", "Check cutlery", "Coffee plunger working and clean", "Pots and pans clean + stacked neatly", "Dishwasher + filter cleaned", "Salt and pepper grinders full (Matching?)", "Fill coffee tea & sugar", "Dish soap + Sponges", "Bin clean with extra bags under sink", "2 clean tea towels"]}, {"name": "Under Sink - Guest", "items": ["Black bags", "Sponges", "Sunlight liquid", "Cleaning cloth x1", "Dishwasher tablets x3", "Multipurpose cleaner", "Kitchen towels x3"]}, {"name": "Bathrooms (each room)", "items": ["Toilet spotless + Flushing", "Toilet seat working", "Toilet spray / air freshener", "Toilet brush", "Toilet paper - 2 rolls", "Hand soap full", "Drains flowing - NO HAIR", "Body wash full", "Mirror clean + streak free"]}, {"name": "Bedrooms (each room)", "items": ["Linen Check - No stains or spots", "No hairs", "Hair dryer working", "Side tables straight + lamps working", "Towels folded neatly on bed", "Extra blankets available"]}, {"name": "General / Other areas", "items": ["Geyser turned on - check HOT WATER?", "Iron and iron board working", "Drying rack for laundry - open it - working?", "Lint trap clean", "Inspect washer and dryer", "Empty dryers water compartment", "Check gas bottles (1x in use + 1x full spare)", "Lights & lamps working", "All windows clean", "Dead bugs & dust on window sills", "Paintings & mirrors straight", "Diffusers half way full"]}, {"name": "Property Specifics", "items": ["DStv app working", "Welcome items stocked", "Garage opening and closing (Test remote)", "Garage clean - NO COBWEBS", "Fire place clean", "Outdoor cushions and furniture arranged", "Braai clean + gas full", "Check alarm is working", "Heaters working / oil heater", "Gas for stove top full?", "Beach umbrella working?"]}]}, "Modern Beach Apt": {"title": "Inspection", "sections": [{"name": "Exterior / Entrance", "items": ["Key box working", "Front door locks correctly", "Walkway swept", "Keys working", "Exterior lights on", "No cobwebs"]}, {"name": "Living Room/ Lounge", "items": ["TV and Remotes working / check batteries", "Wifi working - speed test", "Heaters working / oil heater", "Curtains & blinds working"]}, {"name": "Kitchen", "items": ["Kettle working", "Fridge working + ice trays filled", "Microwave working", "Toaster working", "Stove & oven working", "Bread knife", "Scissors", "Bottle opener", "Check cutlery", "Coffee plunger working and clean", "Pots and pans clean + stacked neatly", "Dishwasher + filter cleaned", "Salt and pepper grinders full (Matching?)", "Fill coffee tea & sugar", "Dish soap + Sponges", "Bin clean with extra bags under sink", "2 clean tea towels"]}, {"name": "Under Sink - Guest", "items": ["Black bags", "Sponges", "Sunlight liquid", "Cleaning cloth x1", "Dishwasher tablets x3", "Multipurpose cleaner", "Kitchen towels x2"]}, {"name": "Bathrooms (each room)", "items": ["Toilet spotless + Flushing", "Toilet seat working", "Toilet spray / air freshener", "Toilet brush", "Toilet paper - 2 rolls", "Hand soap full", "Drains flowing - NO HAIR", "Body wash full", "Mirror clean + streak free"]}, {"name": "Bedrooms (each room)", "items": ["Linen check - No stains or spots", "No hairs", "Hair dryer working", "Side tables straight + lamps working", "Towels folded neatly on bed", "Extra blankets available"]}, {"name": "General / Other areas", "items": ["Geyser turned on - check HOT WATER?", "Iron and iron board working", "Drying rack for laundry - open it - working?", "Lint trap clean", "Inspect washer and dryer", "Empty dryers water compartment", "Check gas bottles (1x in use + 1x full spare)", "Lights & lamps working", "All windows clean", "Dead bugs & dust on window sills", "Paintings & mirrors straight", "Diffusers half way full"]}, {"name": "Property Specifics", "items": ["DStv app working", "Welcome items stocked", "Garage opening and closing (Test remote)", "Garage clean - NO COBWEBS", "Fire place clean", "Outdoor cushions and furniture arranged", "Braai clean + gas bottle full", "Check alarm is working", "Umbrella working", "Heaters working / oil heater", "Gas for geyser full?"]}]}, "Malloom": {"title": "Inspection", "sections": [{"name": "Exterior / Entrance", "items": ["Key box working", "Front door locks correctly", "Walkway swept", "Keys working", "Exterior lights on", "Outdoor cushions and furniture presentable?", "Braai clean", "No cobwebs"]}, {"name": "Living Room/ Lounge", "items": ["TV and Remotes working / check batteries", "Wifi working - speed test", "Blinds working"]}, {"name": "Kitchen", "items": ["Kettle working", "Fridge working + ice trays filled", "Microwave working", "Toaster working", "Stove & oven working", "Bread knife", "Scissors", "Bottle opener", "Check cutlery", "Coffee plunger working and clean", "Pots and pans clean + stacked neatly", "Dishwasher + filter cleaned", "Salt and pepper grinders full (Matching?)", "Fill coffee tea & sugar", "Dish soap + Sponges", "Bin clean with extra bags under sink", "2 clean tea towels"]}, {"name": "Under Sink - Guest", "items": ["Black bags", "Sponges", "Sunlight liquid", "Cleaning cloth x1", "Dishwasher tablets x3", "Multipurpose cleaner", "Kitchen towels x2"]}, {"name": "Bathrooms (each room)", "items": ["Toilet spotless + Flushing", "Toilet seat working", "Toilet spray / air freshener", "Toilet brush", "Toilet paper - 2 rolls", "Hand soap full", "Drains flowing - NO HAIR", "Body wash full", "Mirror clean + streak free"]}, {"name": "Bedrooms (each room)", "items": ["Linen check - No stains or spots", "No hairs", "Hair dryer working", "Side tables straight + lamps working", "Towels folded neatly on bed", "Extra blankets available"]}, {"name": "General / Other areas", "items": ["Geyser turned on - check HOT WATER?", "Iron and iron board working", "Drying rack for laundry - open it - working?", "Inspect washer", "Check gas bottles (1x in use + 1x full spare)", "Lights & lamps working", "All windows clean", "Dead bugs & dust on window sills", "Paintings & mirrors straight", "Diffusers half way full"]}, {"name": "Property Specifics", "items": ["Netflix", "Prepaid electricity meter - over 150 units", "Braai clean", "Dehumidifier empty", "Heaters working / oil heater", "Refuse remote?", "Water plants"]}]}, "Millwood": {"title": "Inspection", "sections": [{"name": "Exterior / Entrance", "items": ["Key box working", "Front door locks correctly", "Walkway swept", "Keys working", "Exterior lights on", "Braai clean", "No cobwebs"]}, {"name": "Living Room/ Lounge", "items": ["TV and Remotes working / check batteries", "Wifi working - speed test"]}, {"name": "Kitchen", "items": ["Kettle working", "Fridge working + ice trays filled", "Microwave working", "Toaster working", "Stove & oven working", "Bread knife", "Scissors", "Bottle opener", "Check cutlery", "Coffee plunger working and clean", "Pots and pans clean + stacked neatly", "Dishwasher + filter cleaned", "Salt and pepper grinders full (Matching?)", "Fill coffee tea & sugar", "Dish soap + Sponges", "Bin clean with extra bags under sink", "2 clean tea towels"]}, {"name": "Under Sink - Guest", "items": ["Black bags", "Sponges", "Sunlight liquid", "Cleaning cloth x1", "Dishwasher tablets x3", "Multipurpose cleaner", "Kitchen towels x2"]}, {"name": "Bathrooms (each room)", "items": ["Toilet spotless + Flushing", "Toilet seat working", "Toilet spray / air freshener", "Toilet brush", "Toilet paper - 2 rolls", "Hand soap full", "Drains flowing - NO HAIR", "Body wash full", "Mirror clean + streak free"]}, {"name": "Bedrooms (each room)", "items": ["Linen Check - No stains or spots", "No hairs", "Hair dryer working", "Side tables straight + lamps working", "Towels folded neatly on bed", "Extra blankets available"]}, {"name": "General / Other areas", "items": ["Geyser turned on - check HOT WATER?", "Iron and iron board working", "Drying rack for laundry - open it - working?", "Inspect washer", "Empty dryers water compartment", "Lights & lamps working", "All windows clean", "Dead bugs & dust on window sills", "Paintings & mirrors straight", "Diffusers half way full"]}, {"name": "Property Specifics", "items": ["Netflix", "Prepaid electricity meter - over 150 units", "Braai clean", "Dehumidifier empty", "Heater working - gas full?", "Ceiling fan working?", "All keys in shutter?", "Nespresso machine water full"]}]}, "Ley Pool": {"title": "Inspection", "sections": [{"name": "Exterior / Entrance", "items": ["Key box working", "Front door locks correctly", "Walkway swept", "Keys working", "Exterior lights on", "Sun lounger cushion and hammock", "Braai clean", "No cobwebs"]}, {"name": "Living Room/ Lounge", "items": ["Wifi working - speed test", "Blinds working"]}, {"name": "Kitchen", "items": ["Kettle working", "Fridge working + ice trays filled", "Microwave working", "Toaster working", "Stove working", "Bread knife", "Scissors", "Bottle opener", "Check cutlery", "Coffee plunger working and clean", "Pots and pans clean + stacked neatly", "Dishwasher + filter cleaned", "Salt and pepper grinders full (Matching?)", "Fill coffee tea & sugar", "Dish soap + Sponges", "Bin clean with extra bags under sink", "2 clean tea towels"]}, {"name": "Under Sink - Guest", "items": ["Black bags", "Sponges", "Sunlight liquid", "Cleaning cloth x1", "Dishwasher tablets x3", "Multipurpose cleaner", "Kitchen towels x2"]}, {"name": "Bathrooms (each room)", "items": ["Toilet spotless + Flushing", "Toilet seat working", "Toilet spray / air freshener", "Toilet brush", "Toilet paper - 2 rolls", "Hand soap full", "Drains flowing - NO HAIR", "Body wash full", "Mirror clean + streak free"]}, {"name": "Bedrooms (each room)", "items": ["Linen Check - No stains or spots", "No hairs", "Hair dryer working", "Side tables straight + lamps working", "Towels folded neatly on bed", "Extra blankets available"]}, {"name": "General / Other areas", "items": ["Geyser turned on - check HOT WATER?", "Iron and iron board working", "Drying rack for laundry - open it - working?", "Lights & lamps working", "All windows clean", "Dead bugs & dust on window sills", "Paintings & mirrors straight", "Diffusers half way full"]}, {"name": "Property Specifics", "items": ["Pool clean", "Welcome items stocked - if applicable", "Prepaid electricity meter - over 150 units", "Outdoor cushions and furniture & arranged", "Braai clean", "Heaters working / oil heater", "Fans working?", "Put out sun lounger cushions"]}]}, "Ley Garden": {"title": "Inspection", "sections": [{"name": "Exterior / Entrance", "items": ["Key box working", "Front door locks correctly", "Walkway swept", "Keys working", "Exterior lights on", "Sun lounger cushion and hammock", "Braai clean", "No cobwebs"]}, {"name": "Living Room/ Lounge", "items": ["Wifi working - speed test", "Blinds working"]}, {"name": "Kitchen", "items": ["Kettle working", "Fridge working + ice trays filled", "Microwave working", "Toaster working", "Stove working", "Bread knife", "Scissors", "Bottle opener", "Check cutlery", "Coffee plunger working and clean", "Pots and pans clean + stacked neatly", "Dishwasher + filter cleaned", "Salt and pepper grinders full (Matching?)", "Fill coffee tea & sugar", "Dish soap + Sponges", "Bin clean with extra bags under sink", "2 clean tea towels"]}, {"name": "Under Sink - Guest", "items": ["Black bags", "Sponges", "Sunlight liquid", "Cleaning cloth x1", "Dishwasher tablets x3", "Multipurpose cleaner", "Kitchen towels x2"]}, {"name": "Bathrooms (each room)", "items": ["Toilet spotless + Flushing", "Toilet seat working", "Toilet spray / air freshener", "Toilet brush", "Toilet paper - 2 rolls", "Hand soap full", "Drains flowing - NO HAIR", "Body wash full", "Mirror clean + streak free"]}, {"name": "Bedrooms (each room)", "items": ["Linen Check - No stains or spots", "No hairs", "Hair dryer working", "Side tables straight + lamps working", "Towels folded neatly on bed", "Extra blankets available"]}, {"name": "General / Other areas", "items": ["Geyser turned on - check HOT WATER?", "Iron and iron board working", "Drying rack for laundry - open it - working?", "Lights & lamps working", "All windows clean", "Dead bugs & dust on window sills", "Paintings & mirrors straight", "Diffusers half way full"]}, {"name": "Property Specifics", "items": ["Pool clean", "Welcome items stocked - if applicable", "Prepaid electricity meter - over 150 units", "Outdoor cushions and furniture & arranged", "Braai clean", "Heaters working / oil heater", "Fans working?", "Put out sun lounger cushions"]}]}, "Bali House": {"title": "Inspection", "sections": [{"name": "Exterior / Entrance", "items": ["Key box working", "Front door locks correctly", "Walkway swept", "Keys working plus remote working", "Exterior lights on", "Braai clean", "Check alarm is working", "No cobwebs"]}, {"name": "Living Room/ Lounge", "items": ["Wifi working - speed test", "Curtains & blinds working"]}, {"name": "Kitchen", "items": ["Kettle working", "Fridge working + ice trays filled", "Microwave working", "Toaster working", "Stove & oven working", "Bread knife", "Scissors", "Bottle opener", "Check cutlery", "Coffee plunger working and clean", "Pots and pans clean + stacked neatly", "Dishwasher + filter cleaned", "Salt and pepper grinders full (Matching?)", "Fill coffee tea & sugar", "Dish soap + Sponges", "Bin clean with extra bags under sink", "2 clean tea towels"]}, {"name": "Under Sink - Guest", "items": ["Black bags", "Sponges", "Sunlight liquid", "Cleaning cloth x1", "Dishwasher tablets x3", "Multipurpose cleaner", "Kitchen towels x2"]}, {"name": "Bathrooms (each room)", "items": ["Toilet spotless + Flushing", "Toilet seat working", "Toilet spray / air freshener", "Toilet brush", "Toilet paper - 2 rolls", "Hand soap full", "Drains flowing - NO HAIR", "Body wash full", "Mirror clean + streak free"]}, {"name": "Bedrooms (each room)", "items": ["Linen Check - No stains or spots", "No hairs", "Hair dryer working", "Side tables straight + lamps working", "Towels folded neatly on bed", "Extra blankets available"]}, {"name": "General / Other areas", "items": ["Geyser turned on - check HOT WATER?", "Iron and iron board working", "Drying rack for laundry - open it - working?", "Inspect washer", "Check gas bottles (1x in use + 1x full spare)", "Lights & lamps working", "All windows clean", "Dead bugs & dust on window sills", "Paintings & mirrors straight", "Diffusers half way full"]}, {"name": "Property Specifics", "items": ["Pool clean", "Welcome items stocked", "Fire place clean", "Prepaid electricity meter - over 150 units", "Outdoor cushions and furniture & arranged", "Braai areas clean", "Check alarm is working", "Heaters working / oil heater", "Fans working?"]}]}, "Capri House": {"title": "Inspection", "sections": [{"name": "Exterior / Entrance", "items": ["Key box working", "Front door locks correctly", "Walkway swept", "Keys working plus remote working", "Exterior lights on", "Outdoor cushions and furniture & arranged", "Braai clean", "Check alarm is working", "No cobwebs"]}, {"name": "Living Room/ Lounge", "items": ["TV and Remotes working / check batteries", "Wifi working - speed test", "Curtains & blinds working"]}, {"name": "Kitchen", "items": ["Kettle working", "Fridge working + ice trays filled", "Microwave working", "Toaster working", "Stove & oven working", "Bread knife", "Scissors", "Bottle opener", "Check cutlery", "Coffee plunger working and clean", "Pots and pans clean + stacked neatly", "Dishwasher + filter cleaned", "Salt and pepper grinders full (Matching?)", "Fill coffee tea & sugar", "Dish soap + Sponges", "Bin clean with extra bags under sink", "2 clean tea towels"]}, {"name": "Under Sink - Guest", "items": ["Black bags", "Sponges", "Sunlight liquid", "Cleaning cloth x1", "Dishwasher tablets x3", "Multipurpose cleaner", "Kitchen towels x2"]}, {"name": "Bathrooms (each room)", "items": ["Toilet spotless + Flushing", "Toilet seat working", "Toilet spray / air freshener", "Toilet brush", "Toilet paper - 2 rolls", "Hand soap full", "Drains flowing - NO HAIR", "Body wash full", "Mirror clean + streak free"]}, {"name": "Bedrooms (each room)", "items": ["Linen Check - No stains or spots", "No hairs", "Hair dryer working", "Side tables straight + lamps working", "Towels folded neatly on bed", "Extra blankets available"]}, {"name": "General / Other areas", "items": ["Geyser turned on - check HOT WATER?", "Iron and iron board working", "Lint trap clean", "Inspect washer", "Check gas bottles (1x in use + 1x full spare)", "Lights & lamps working", "All windows clean", "Dead bugs & dust on window sills", "Paintings & mirrors straight", "Diffusers half way full"]}, {"name": "Property Specifics", "items": ["Netflix working", "Garden clean - grass cut", "Welcome items stocked", "Garage opening and closing (Test remote)", "Garage clean - NO COBWEBS", "Sliding gate working", "Fire place clean", "Prepaid electricity meter - over 150 units", "Outdoor cushions and furniture arranged", "Braai area clean", "Heaters working / oil heater", "Fans working?"]}]}, "Antigua": {"title": "Inspection", "sections": [{"name": "Exterior / Entrance", "items": ["Key box working", "Front door locks correctly", "Walkway swept", "Keys working plus remote working", "Exterior lights on", "Outdoor cushions and furniture & arranged", "Braai clean", "No cobwebs"]}, {"name": "Living Room/ Lounge", "items": ["TV and Remotes working / check batteries", "Wifi working - speed test", "Heaters working / oil heater", "Curtains working"]}, {"name": "Kitchen", "items": ["Kettle working", "Fridge working + ice trays filled", "Microwave working", "Toaster working", "Stove & oven working", "Bread knife", "Scissors", "Bottle opener", "Check cutlery", "Coffee plunger working and clean", "Pots and pans clean + stacked neatly", "Dishwasher + filter cleaned", "Salt and pepper grinders full (Matching?)", "Fill coffee tea & sugar", "Dish soap + Sponges", "Bin clean with extra bags under sink", "2 clean tea towels"]}, {"name": "Under Sink - Guest", "items": ["Black bags", "Sponges", "Sunlight liquid", "Cleaning cloth x1", "Dishwasher tablets x3", "Multipurpose cleaner", "Kitchen towels x2"]}, {"name": "Bathrooms (each room)", "items": ["Toilet spotless + Flushing", "Toilet seat working", "Toilet spray / air freshener", "Toilet brush", "Toilet paper - 2 rolls", "Hand soap full", "Drains flowing - NO HAIR", "Body wash full", "Mirror clean + streak free"]}, {"name": "Bedrooms (each room)", "items": ["Linen Check - No stains or spots", "No hairs", "Hair dryer working", "Side tables straight + lamps working", "Towels folded neatly on bed", "Extra blankets available"]}, {"name": "General / Other areas", "items": ["Geyser turned on - check HOT WATER?", "Iron and iron board working", "Inspect washer", "Lights & lamps working", "All windows clean", "Dead bugs & dust on window sills", "Paintings & mirrors straight", "Diffusers half way full"]}, {"name": "Property Specifics", "items": ["Netflix working", "Pool clean", "Welcome items stocked", "Garage opening and closing (Test remote)", "Garage clean - NO COBWEBS", "Sliding gate working", "Fire place clean", "Sun lounger cushions put out", "Braai area clean", "Garden clean - grass cut"]}]}, "Waves 412": {"title": "Inspection", "sections": [{"name": "Exterior / Entrance", "items": ["Key box working", "Front door locks correctly", "Keys working", "Exterior lights on", "Outdoor cushions and furniture & arranged", "Braai clean", "No cobwebs"]}, {"name": "Living Room/ Lounge", "items": ["TV and Remotes working / check batteries", "Wifi working - speed test", "Blinds working"]}, {"name": "Kitchen", "items": ["Kettle working", "Fridge working + ice trays filled", "Microwave working", "Toaster working", "Stove & oven working", "Bread knife", "Scissors", "Bottle opener", "Check cutlery", "Coffee plunger working and clean", "Pots and pans clean + stacked neatly", "Dishwasher + filter cleaned", "Salt and pepper grinders full (Matching?)", "Fill coffee tea & sugar", "Dish soap + Sponges", "Bin clean with extra bags under sink", "2 clean tea towels"]}, {"name": "Under Sink - Guest", "items": ["Black bags", "Sponges", "Sunlight liquid", "Cleaning cloth x1", "Dishwasher tablets x3", "Multipurpose cleaner", "Kitchen towels x2"]}, {"name": "Bathrooms (each room)", "items": ["Toilet spotless + Flushing", "Toilet seat working", "Toilet spray / air freshener", "Toilet brush", "Toilet paper - 2 rolls", "Hand soap full", "Drains flowing - NO HAIR", "Body wash full", "Mirror clean + streak free"]}, {"name": "Bedrooms (each room)", "items": ["Linen check - No stains or spots", "No hairs", "Hair dryer working", "Side tables straight + lamps working", "Towels folded neatly on bed", "Extra blankets available"]}, {"name": "General / Other areas", "items": ["Geyser turned on - check HOT WATER?", "Iron and iron board working", "Drying rack for laundry - open it - working?", "Inspect washer", "Lights & lamps working", "All windows clean", "Dead bugs & dust on window sills", "Paintings & mirrors straight", "Diffusers half way full"]}, {"name": "Property Specifics", "items": ["Remote for blind working", "Prepaid electricity meter - over 150 units", "Heaters working / oil heater", "Nespresso pods x 4 is coffee container", "Kitkats x2 at Nespresso machine", "Milks in fridge"]}]}, "Waves 214": {"title": "Inspection", "sections": [{"name": "Exterior / Entrance", "items": ["Key box working", "Front door locks correctly", "Keys working plus remote working", "Outdoor cushions and furniture & arranged", "No cobwebs"]}, {"name": "Living Room/ Lounge", "items": ["TV and Remotes working / check batteries", "Wifi working - speed test", "Curtains & blinds working"]}, {"name": "Kitchen", "items": ["Kettle working", "Fridge working + ice trays filled", "Microwave working", "Toaster working", "Stove & oven working", "Bread knife", "Scissors", "Bottle opener", "Check cutlery", "Coffee plunger working and clean", "Pots and pans clean + stacked neatly", "Dishwasher + filter cleaned", "Salt and pepper grinders full (Matching?)", "Fill coffee tea & sugar", "Dish soap + Sponges", "Bin clean with extra bags under sink", "2 clean tea towels"]}, {"name": "Under Sink - Guest", "items": ["Black bags", "Sponges", "Sunlight liquid", "Cleaning cloth x1", "Dishwasher tablets x3", "Multipurpose cleaner", "Kitchen towels x2"]}, {"name": "Bathrooms (each room)", "items": ["Toilet spotless + Flushing", "Toilet seat working", "Toilet spray / air freshener", "Toilet brush", "Toilet paper - 2 rolls", "Hand soap full", "Drains flowing - NO HAIR", "Body wash full", "Mirror clean + streak free"]}, {"name": "Bedrooms (each room)", "items": ["Linen Check - No stains or spots", "No hairs", "Hair dryer working", "Side tables straight + lamps working", "Towels folded neatly on bed", "Extra blankets available"]}, {"name": "General / Other areas", "items": ["Geyser turned on - check HOT WATER?", "Iron and iron board working", "Drying rack for laundry - open it - working?", "Lint trap clean", "Inspect washer and dryer", "Empty dryers water compartment", "Lights & lamps working", "All windows clean", "Dead bugs & dust on window sills", "Paintings & mirrors straight"]}, {"name": "Property Specifics", "items": ["Netflix working", "Prepaid electricity meter - over 150 units", "Heaters working / oil heater", "Fan working", "Apples in fruit bowl", "Milk in fridge", "8 nespresso pods in glass container", "Veranda lights on - after hours check in"]}]}};
+const cur = () => {
+  if (prefs.list === "inspection") return INSPECTION[prefs.property] || LISTS.inspection;
+  const L = LISTS[prefs.list];
+  if (!L.numbered) return L;
+  let n = 0;
+  return { title: L.title, numbered: true, sections: L.sections.map(s => {
+    const items = [], nums = [];
+    s.items.forEach(it => { n++; const o = typeof it === "string" ? { t: it } : it; if (!o.only || o.only.includes(prefs.property)) { items.push(o.t); nums.push(n); } });
+    return { name: s.name, items, nums };
+  }) };
+};
+
+const $ = id => document.getElementById(id);
+const today = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+const load = k => { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } };
+const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+
+const prefs = Object.assign({ property: PROPERTIES[0], list: "cleaning", cleaner: "" }, load("oh:prefs") || {});
+if (!PROPERTIES.includes(prefs.property)) prefs.property = PROPERTIES[0];
+if (!LISTS[prefs.list]) prefs.list = "cleaning";
+let run = { date: today(), checks: {}, notes: {} };
+let armed = false, armTimer = null;
+
+const runKey = () => "oh:run:" + prefs.property + "|" + prefs.list;
+function loadRun() {
+  const saved = load(runKey());
+  run = (saved && saved.day === today()) ? saved : { day: today(), date: today(), checks: {}, notes: {} };
+}
+function saveRun() { run.day = run.day || today(); save(runKey(), run); }
+
+function stats() {
+  let total = 0, done = 0;
+  cur().sections.forEach((s, si) => s.items.forEach((_, ii) => { total++; if (run.checks[si + "|" + ii]) done++; }));
+  return { total, done };
+}
+
+function render() {
+  const noInsp = NO_INSPECTION.includes(prefs.property);
+  document.querySelector('.tab[data-list="inspection"]').hidden = noInsp;
+  if (noInsp && prefs.list === "inspection") { prefs.list = "cleaning"; save("oh:prefs", prefs); loadRun(); }
+  const L = cur();
+  document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-pressed", String(t.dataset.list === prefs.list)));
+  $("date").value = run.date;
+  $("cleaner").value = STAFF.includes(prefs.cleaner) ? prefs.cleaner : "";
+  const box = $("lists");
+  box.textContent = "";
+  box.className = L.mode === "need" ? "need" : "";
+  let num = 0;
+  L.sections.forEach((s, si) => {
+    const sec = document.createElement("section");
+    const h = document.createElement("h2");
+    const nm = document.createElement("div"); nm.textContent = s.name;
+    const ct = document.createElement("span"); ct.dataset.sec = si;
+    h.append(nm, ct); sec.appendChild(h);
+    s.items.forEach((text, ii) => {
+      const key = si + "|" + ii;
+      const row = document.createElement("label"); row.className = "row";
+      const cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = !!run.checks[key];
+      cb.addEventListener("change", () => { run.checks[key] = cb.checked; saveRun(); update(); });
+      const sp = document.createElement("span"); sp.textContent = L.numbered ? s.nums[ii] + ". " + text : text;
+      row.append(cb, sp); sec.appendChild(row);
+    });
+    const ta = document.createElement("textarea");
+    ta.placeholder = L.mode === "need" ? (s.items.length ? "Other notes (optional)" : "Type any other items needed, and how many") : "Notes or problems in this area (optional)";
+    ta.value = run.notes[si] || "";
+    ta.addEventListener("input", () => { run.notes[si] = ta.value; saveRun(); update(); });
+    sec.appendChild(ta);
+    box.appendChild(sec);
+  });
+  update();
+}
+
+function update() {
+  const { total, done } = stats();
+  $("fill").style.width = total ? (done / total * 100) + "%" : "0";
+  const need = cur().mode === "need";
+  $("fill").parentNode.style.visibility = need ? "hidden" : "visible";
+  $("count").textContent = need ? done + " needed" : done + " of " + total;
+  $("sendp").textContent = need ? "Tick only what is needed, then send the list on WhatsApp. Only the ticked items are sent." : "When you are done, send the report on WhatsApp, then attach your photos in the same chat.";
+  cur().sections.forEach((s, si) => {
+    const n = s.items.filter((_, ii) => run.checks[si + "|" + ii]).length;
+    const el = document.querySelector('[data-sec="' + si + '"]');
+    if (el) el.textContent = !s.items.length ? "" : need ? (n ? n + " needed" : "") : n + "/" + s.items.length;
+  });
+  const text = report();
+  const base = WHATSAPP_NUMBER ? "https://wa.me/" + WHATSAPP_NUMBER : "https://wa.me/";
+  $("wa").href = base + "?text=" + encodeURIComponent(text);
+}
+
+function report() {
+  const L = cur(), { total, done } = stats();
+  if (L.mode === "need") {
+    const out = ["*" + L.title + " needed: " + prefs.property + "*", "Date: " + run.date, "Name: " + (prefs.cleaner || "(not entered)")];
+    let any = false;
+    L.sections.forEach((s, si) => {
+      const got = s.items.filter((_, ii) => run.checks[si + "|" + ii]);
+      const note = (run.notes[si] || "").trim();
+      if (got.length) { any = true; out.push("", "*" + s.name + ":*", ...got.map(t => "- " + t)); }
+      if (note) { any = true; out.push("", "*" + (s.items.length ? s.name + " notes" : s.name) + ":*", note); }
+    });
+    if (!any) out.push("", "Nothing needed.");
+    return out.join("\n");
+  }
+  const lines = [];
+  lines.push("*" + L.title + " report: " + prefs.property + "*");
+  lines.push("Date: " + run.date);
+  lines.push("Name: " + (prefs.cleaner || "(not entered)"));
+  lines.push("Done: " + done + " of " + total + (done === total ? " (all complete)" : ""));
+  const missed = []; let n = 0;
+  L.sections.forEach((s, si) => s.items.forEach((t, ii) => { n++; if (!run.checks[si + "|" + ii]) missed.push("- " + s.name + (L.numbered ? " #" + s.nums[ii] : "") + ": " + t); }));
+  if (missed.length) { lines.push("", "*Not done:*", ...missed); }
+  const notes = [];
+  L.sections.forEach((s, si) => { const n = (run.notes[si] || "").trim(); if (n) notes.push("- " + s.name + ": " + n); });
+  if (notes.length) { lines.push("", "*Notes:*", ...notes); }
+  lines.push("", "Photos to follow.");
+  return lines.join("\n");
+}
+
+function flash(msg) { $("status").textContent = msg; setTimeout(() => { if ($("status").textContent === msg) $("status").textContent = ""; }, 3500); }
+
+$("copy").addEventListener("click", async () => {
+  const text = report();
+  try { await navigator.clipboard.writeText(text); flash("Report copied. Paste it into WhatsApp."); }
+  catch (e) {
+    const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); flash("Report copied. Paste it into WhatsApp."); } catch (e2) { flash("Could not copy. Use Send on WhatsApp instead."); }
+    ta.remove();
+  }
+});
+
+$("clear").addEventListener("click", () => {
+  const b = $("clear");
+  if (!armed) { armed = true; b.classList.add("arm"); b.textContent = "Tap again to clear"; armTimer = setTimeout(disarm, 4000); return; }
+  disarm(); run = { day: today(), date: today(), checks: {}, notes: {} }; saveRun(); render(); flash("List cleared.");
+});
+function disarm() { armed = false; clearTimeout(armTimer); $("clear").classList.remove("arm"); $("clear").textContent = "Clear list"; }
+
+$("prop").addEventListener("change", e => { prefs.property = e.target.value; save("oh:prefs", prefs); loadRun(); render(); });
+document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => { prefs.list = t.dataset.list; save("oh:prefs", prefs); loadRun(); render(); }));
+$("cleaner").addEventListener("input", e => { prefs.cleaner = e.target.value; save("oh:prefs", prefs); update(); });
+$("date").addEventListener("change", e => { run.date = e.target.value || today(); saveRun(); update(); });
+
+PROPERTIES.forEach(p => { const o = document.createElement("option"); o.value = p; o.textContent = p; $("prop").appendChild(o); });
+STAFF.forEach(n => { const o = document.createElement("option"); o.value = n; o.textContent = n; $("cleaner").appendChild(o); });
+$("prop").value = prefs.property;
+loadRun();
+render();
+</script>
+</body>
+</html>
